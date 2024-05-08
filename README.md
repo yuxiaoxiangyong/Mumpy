@@ -32,7 +32,7 @@ This repo contains an official PyTorch implementation of our paper: [Multilatera
 
 
 ##  📧Contact
-If you have any questions, please feel free to reach me out at yingzhang@stu.ouc.edu.cn.
+If you have any questions about inpainting detection, please feel free to reach me out at yingzhang@stu.ouc.edu.cn.
 
 ##  Citation
 If you find our repo useful for your research, please consider citing our paper:
