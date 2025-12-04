@@ -542,62 +542,63 @@ def PsccAug(pair, v):
 def augment_list():
     # 12
     list = [
-        #(ShearX, 0., 0.3),  # 0
-        #(ShearY, 0., 0.3),  # 1
-        #(TranslateX, 0., 0.33),  # 2
-        #(TranslateY, 0., 0.33),  # 3
-        #(Rotate, 0, 180),  # 4
-        #(SamplePairing(imgs), 0, 0.4),  # 15
+        # (ShearX, 0., 0.3),  # 0
+        # (ShearY, 0., 0.3),  # 1
+        # (TranslateX, 0., 0.33),  # 2
+        # (TranslateY, 0., 0.33),  # 3
+        # (Rotate, 0, 180),  # 4
+        # (SamplePairing(imgs), 0, 0.4),  # 15
         (Identity, 0., 1.0),
         (Identity, 0., 1.0),
         (Identity, 0., 1.0),
         (Identity, 0., 1.0),
-        #(RandomGaussianBlur, 0., 5),
+        # (RandomGaussianBlur, 0., 5),
         # (JPEGCompression, 0, 5),
-        #(AutoContrast, 0, 1), 
-        #(Invert, 0, 1), 
-        #(Equalize, 0, 1), 
-        #(Solarize, 0, 110),  
-        #(Posterize, 3, 8), 
-        # (Contrast, 0.5, 1.5),
-        #(Color, 0.5, 1.5), 
-        # (OriginalBrightness, 0.5, 1.5),
-        #(Sharpness, 0.5, 1.5), 
+        # (AutoContrast, 0, 1),
+        # (Invert, 0, 1),
+        # (Equalize, 0, 1),
+        # (Solarize, 0, 110),
+        # (Posterize, 3, 8),
+        (Contrast, 0.5, 1.5),
+        # (Color, 0.5, 1.5),
+        (OriginalBrightness, 0.5, 1.5),
+        # (Sharpness, 0.5, 1.5),
         (HFlip, 1, 1),
         (VFlip, 1, 1),
-        #(RandomMixUp, 0, 1),
+        (RandomMixUp, 0, 1),
         (PsccAug, 0, 1),
-        #(Cutout, 0, 0.2), 
-        #(RandomCrop, 112, 220), 
-        #(RandomRotate, 0, 180), 
-        # (OriginalRandomCrop, 112, 220),
-        #(RandomScaleCrop, 112, 220), 
+        # (Cutout, 0, 0.2),
+        (RandomCrop, 20, 220),
+        (RandomRotate, 0, 180),
+        (OriginalRandomCrop, 20, 220),
+        (RandomScaleCrop, 20, 220)
     ]
     return list
 
 
 def none_shape_change_augment_list():
     list = [
-        #(ShearX, 0., 0.3),  # 0
-        #(ShearY, 0., 0.3),  # 1
-        #(TranslateX, 0., 0.33),  # 2
-        #(TranslateY, 0., 0.33),  # 3
-        #(Rotate, 0, 180),  # 4
-        #(SamplePairing(imgs), 0, 0.4),  # 15
-        #(AutoContrast, 0, 1), 
-        #(RandomGaussianBlur, 0., 5),
-        #(JPEGCompression, 0, 5),
-        #(Invert, 0, 1), 
-        #(Equalize, 0, 1), 
-        #(Solarize, 0, 110),  
-        #(Posterize, 3, 8), 
-        #(Contrast, 0.5, 1.5), 
-        #(Color, 0.5, 1.5), 
-        #(OriginalBrightness, 0.5, 1.5), 
-        #(Sharpness, 0.5, 1.5), 
+        # (ShearX, 0., 0.3),  # 0
+        # (ShearY, 0., 0.3),  # 1
+        # (TranslateX, 0., 0.33),  # 2
+        # (TranslateY, 0., 0.33),  # 3
+        # (Rotate, 0, 180),  # 4
+        # (SamplePairing(imgs), 0, 0.4),  # 15
+        # (AutoContrast, 0, 1),
+        # (RandomGaussianBlur, 0., 5),
+        # (RandomGaussianNoise, 0, 5),
+        # (JPEGCompression, 0, 5),
+        # (Invert, 0, 1),
+        # (Equalize, 0, 1),
+        # (Solarize, 0, 110),
+        # (Posterize, 3, 8),
+        (Contrast, 0.5, 1.5),
+        # (Color, 0.5, 1.5),
+        (OriginalBrightness, 0.5, 1.5),
+        # (Sharpness, 0.5, 1.5),
         (HFlip, 1, 1),
         (VFlip, 1, 1),
-        #(RandomMixUp, 0, 1),
+        (RandomMixUp, 0, 1),
         (PsccAug, 0, 1),
     ]
     return list
@@ -630,12 +631,27 @@ class DoubleAugmentStrategy(AugmentStrategy):
         ops2 = random.choices(shape_change_list, k=n)
         return ops1 + ops2
 
+class RandomChoiceStrategy(AugmentStrategy):
+    def __init__(self):
+        self.one_strategy = OneAugmentStrategy()
+        self.double_strategy = DoubleAugmentStrategy()
+
+    def apply(self, augment_list, n, none_shape_change_list, shape_change_list):
+        if random.random() < 0.5:
+            return self.one_strategy.apply(
+                augment_list, n, none_shape_change_list, shape_change_list
+            )
+        else:
+            return self.double_strategy.apply(
+                augment_list, n, none_shape_change_list, shape_change_list
+            )
+
 
 class RandAugment:
     def __init__(self, n, m, strategy: AugmentStrategy):
         self.n = n
         self.m = m
-        self.augment_list = augment_list()  #
+        self.augment_list = augment_list()
         self.none_shape_change_augment_list = none_shape_change_augment_list()
         self.shape_change_augment_list = shape_change_augment_list()
         self.strategy = strategy

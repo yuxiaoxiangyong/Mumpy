@@ -4,7 +4,7 @@ import os.path as osp
 import torch.utils.data as data
 from PIL import Image
 from args import get_parser
-from utils.randaugment import RandAugment, OneAugmentStrategy, DoubleAugmentStrategy
+from utils.randaugment import RandAugment, OneAugmentStrategy, DoubleAugmentStrategy, RandomChoiceStrategy
 
 parser = get_parser()
 args = parser.parse_args()
@@ -99,12 +99,13 @@ class UniversalDataset(data.Dataset):
 
             # only train phase excute data augumentation
             if self.augment:
-                davis_randaugment = None
+                davis_randaugment = RandAugment(1, 7, RandomChoiceStrategy())
+                '''
                 if self.singleAugment:
                     davis_randaugment = RandAugment(1, 7, OneAugmentStrategy())
                 else:
                     davis_randaugment = RandAugment(1, 7, DoubleAugmentStrategy())
-
+                '''
                 wait_aug_imgs = [img for img in origin_imgs + origin_imgs1 + origin_imgs2]
                 wait_aug_gt = origin_annots[int(self._length_clip / 2)]
                 iimg, mmask = davis_randaugment(wait_aug_imgs, wait_aug_gt)
